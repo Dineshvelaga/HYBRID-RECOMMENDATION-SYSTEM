@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JK Music Recommendations</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            /* Light theme variables with lavender as initial color */
+            --bg-color: #f5f0ff;
+            --text-color: #333333;
+            --border-color: #e0d5ff;
+            --primary-color: #9d8cff;
+            --secondary-color: #f0e6ff;
+            --card-bg: #ffffff;
+            --hover-bg: #f8f5ff;
+            --muted-text: #6b6b6b;
+            --recommendation-color: #9d8cff;
+        }
+
+        /* Dark theme variables */
+        [data-theme="dark"] {
+            --bg-color: #1a1a2e;
+            --text-color: #ffffff;
+            --border-color: #2d2d42;
+            --primary-color: #9d8cff;
+            --secondary-color: #2d2d42;
+            --card-bg: #242442;
+            --hover-bg: #2d2d42;
+            --muted-text: #a0a0a0;
+            --recommendation-color: #9d8cff;
+        }
+
+        /* Active recommendation state */
+        .recommendations-active {
+            --primary-color: #ff6b6b;
+            --recommendation-color: #ff6b6b;
+            --border-color: #ffeded;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.5s ease;
+        }
+
+        .main-container {
+            margin-top: 60px;
+            display: grid;
+            grid-template-columns: 300px 200px 1fr;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 80px auto 0;
+            padding: 0 20px;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        /* Search Box */
+        .search-box {
+            grid-column: 1 / -1;
+            padding: 10px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .get-recommendations-btn {
+            padding: 12px 24px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .get-recommendations-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            background: var(--recommendation-color);
+        }
+
+        .get-recommendations-btn:disabled {
+            background: var(--border-color);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Songs List */
+        .songs-list {
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            overflow-y: auto;
+            height: calc(100vh - 140px);
+            background: var(--card-bg);
+        }
+
+        .song-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            background: var(--card-bg);
+            transition: all 0.3s ease;
+        }
+
+        .song-item:hover {
+            background: var(--hover-bg);
+        }
+
+        .song-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .song-item h4 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: normal;
+        }
+
+        .song-item p {
+            margin: 5px 0 0 0;
+            font-size: 12px;
+            color: var(--muted-text);
+        }
+
+        .song-item.active p {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Model Buttons */
+        .model-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .model-btn {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-color);
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .model-btn:hover {
+            background: var(--hover-bg);
+        }
+
+        .model-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Song Card with Album Cover */
+        .song-card {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            margin-bottom: 15px;
+            background: var(--card-bg);
+            transition: all 0.3s ease;
+            display: flex;
+            gap: 15px;
+            animation: songCardAppear 0.5s ease forwards;
+            animation-delay: calc(var(--index) * 0.1s);
+            opacity: 0;
+        }
+
+        .song-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .song-card-image {
+            width: 100px;
+            height: 100px;
+            border-radius: 5px;
+            object-fit: cover;
+        }
+
+        .song-card-content {
+            flex: 1;
+        }
+
+        .song-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: var(--primary-color);
+        }
+
+        .song-info {
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: var(--text-color);
+        }
+
+        .song-info span {
+            color: var(--muted-text);
+        }
+
+        .similarity-score {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+            font-size: 14px;
+            color: var(--muted-text);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+            color: var(--text-color);
+        }
+
+        .spinner-border {
+            width: 2rem;
+            height: 2rem;
+            color: var(--primary-color);
+        }
+
+        @media (max-width: 1000px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .songs-list, .recommendations {
+                height: 400px;
+            }
+        }
+
+        /* Logo styles */
+        .logo-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            background: var(--bg-color);
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(-10deg);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.5s ease;
+        }
+
+        .logo::before {
+            content: '♪';
+            position: absolute;
+            top: -10px;
+            right: -8px;
+            font-size: 18px;
+            color: var(--primary-color);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.5s ease;
+        }
+
+        .logo::after {
+            content: '♫';
+            position: absolute;
+            bottom: -10px;
+            left: -8px;
+            font-size: 18px;
+            color: var(--primary-color);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.5s ease;
+        }
+
+        .logo span {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            font-family: 'Arial', sans-serif;
+            letter-spacing: -1px;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .logo-text .subtitle {
+            font-size: 12px;
+            color: var(--muted-text);
+            font-weight: normal;
+        }
+
+        @media (max-width: 768px) {
+            .logo-container {
+                position: relative;
+                top: 0;
+                left: 0;
+                justify-content: center;
+                margin-bottom: 20px;
+            }
+
+            .main-container {
+                margin-top: 0;
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Add this new style for the song card animation */
+        @keyframes songCardAppear {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Update logo styles to match the theme */
+        .logo {
+            background: var(--primary-color);
+            transition: all 0.5s ease;
+        }
+
+        .logo::before, .logo::after {
+            color: var(--primary-color);
+            transition: all 0.5s ease;
+        }
+
+        /* Add rainbow animation keyframes */
+        @keyframes rainbow {
+            0% { --primary-color: #ff0000; --recommendation-color: #ff0000; }
+            20% { --primary-color: #ff9900; --recommendation-color: #ff9900; }
+            40% { --primary-color: #ffff00; --recommendation-color: #ffff00; }
+            60% { --primary-color: #33cc33; --recommendation-color: #33cc33; }
+            80% { --primary-color: #3366ff; --recommendation-color: #3366ff; }
+            100% { --primary-color: #9d8cff; --recommendation-color: #9d8cff; }
+        }
+
+        /* Active recommendation state with rainbow */
+        .recommendations-active {
+            animation: rainbow 5s ease infinite;
+        }
+
+        /* Update transitions for smoother color changes */
+        .logo, .logo::before, .logo::after, 
+        .get-recommendations-btn, .model-btn.active,
+        .song-item.active, .song-card h3 {
+            transition: all 0.5s ease;
+        }
+
+        /* Add rainbow glow effect to cards */
+        .recommendations-active .song-card {
+            box-shadow: 0 4px 15px rgba(157, 140, 255, 0.2);
+            transition: all 0.5s ease;
+        }
+
+        .recommendations-active .song-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(157, 140, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-sun"></i>
+    </button>
+
+    <div class="main-container">
+        <!-- Logo -->
+        <div class="logo-container">
+            <div class="logo">
+                <span>JK</span>
+            </div>
+            <div class="logo-text">
+                Music Recommender
+                <span class="subtitle">Discover Your Perfect Playlist</span>
+            </div>
+        </div>
+
+        <!-- Search Box -->
+        <div class="search-box">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search songs...">
+            <button class="get-recommendations-btn" id="getRecommendationsBtn" disabled>
+                Get Recommendations
+            </button>
+        </div>
+
+        <!-- Songs List -->
+        <div class="songs-list" id="songsList"></div>
+
+        <!-- Model Buttons -->
+        <div class="model-buttons">
+            <button class="model-btn active" data-model="3">Combined Model</button>
+            <button class="model-btn" data-model="1">CountVectorizer</button>
+            <button class="model-btn" data-model="2">TfidfVectorizer</button>
+            <button class="model-btn" data-model="4">Spotify Model</button>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="recommendations">
+            <div class="loading" id="loading">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Getting recommendations...</p>
+            </div>
+
+            <div id="model3Results" class="model-recommendations active">
+                <div class="results" id="results3"></div>
+            </div>
+            <div id="model1Results" class="model-recommendations">
+                <div class="results" id="results1"></div>
+            </div>
+            <div id="model2Results" class="model-recommendations">
+                <div class="results" id="results2"></div>
+            </div>
+            <div id="model4Results" class="model-recommendations">
+                <div class="results" id="results4"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedSong = null;
+        let currentModel = '3';
+        let isDarkMode = false;
+        const searchInput = document.getElementById('searchInput');
+        const songsList = document.getElementById('songsList');
+        const loading = document.getElementById('loading');
+        const modelButtons = document.querySelectorAll('.model-btn');
+        const modelSections = document.querySelectorAll('.model-recommendations');
+        const getRecommendationsBtn = document.getElementById('getRecommendationsBtn');
+        const themeToggle = document.getElementById('themeToggle');
+
+        // Theme toggle functionality
+        themeToggle.addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+            themeToggle.innerHTML = isDarkMode ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+        });
+
+        // Load theme from localStorage
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            isDarkMode = savedTheme === 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            themeToggle.innerHTML = isDarkMode ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+        }
+
+        // Save theme preference
+        function saveTheme() {
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+        }
+
+        themeToggle.addEventListener('click', saveTheme);
+
+        // Load all songs initially
+        async function loadAllSongs() {
+            try {
+                const response = await fetch('/songs');
+                const data = await response.json();
+                displaySongs(data.songs);
+            } catch (error) {
+                console.error('Error loading songs:', error);
+            }
+        }
+
+        // Display songs in the list
+        function displaySongs(songs) {
+            if (!songs || songs.length === 0) {
+                songsList.innerHTML = '<div class="p-3">No songs available</div>';
+                return;
+            }
+
+            songsList.innerHTML = songs.map(song => {
+                const title = song.title || song.song;  // Handle both formats
+                const artist = song['Singer/Artists'] || song.artist;  // Handle both formats
+                const genre = song.Genre || '';  // Optional
+
+                return `
+                    <div class="song-item" data-title="${title}">
+                        <h4>${title}</h4>
+                        <p>${artist}${genre ? ` • ${genre}` : ''}</p>
+                    </div>
+                `;
+            }).join('');
+
+            // Clear any previous selection
+            selectedSong = null;
+            getRecommendationsBtn.disabled = true;
+        }
+
+        // Search functionality
+        searchInput.addEventListener('input', async (e) => {
+            const query = e.target.value.trim().toLowerCase();
+            if (query.length < 2) {
+                loadAllSongs();
+                return;
+            }
+
+            try {
+                const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                displaySongs(data.results);
+            } catch (error) {
+                console.error('Error searching:', error);
+            }
+        });
+
+        // Handle song selection
+        songsList.addEventListener('click', (e) => {
+            const item = e.target.closest('.song-item');
+            if (item) {
+                document.querySelectorAll('.song-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                selectedSong = item.dataset.title;
+                getRecommendationsBtn.disabled = false;
+            }
+        });
+
+        // Model button click handler
+        modelButtons.forEach(button => {
+            button.addEventListener('click', async () => {
+                // Update UI state
+                modelButtons.forEach(btn => btn.classList.remove('active'));
+                modelSections.forEach(section => section.classList.remove('active'));
+                button.classList.add('active');
+                currentModel = button.dataset.model;
+                document.getElementById(`model${currentModel}Results`).classList.add('active');
+
+                // Clear previous selection and results
+                selectedSong = null;
+                getRecommendationsBtn.disabled = true;
+                document.querySelectorAll('.song-item').forEach(i => i.classList.remove('active'));
+                document.querySelectorAll('.results').forEach(results => {
+                    results.innerHTML = '';
+                });
+
+                // Show loading state
+                loading.style.display = 'block';
+                songsList.innerHTML = '<div class="p-3">Loading songs...</div>';
+
+                try {
+                    if (currentModel === '4') {
+                        const response = await fetch('/model4-songs');
+                        if (!response.ok) {
+                            throw new Error('Failed to load Spotify songs');
+                        }
+                        const data = await response.json();
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+                        if (data.songs && data.songs.length > 0) {
+                            console.log('Model 4 songs loaded:', data.songs.length);  // Debug log
+                            displaySongs(data.songs);
+                        } else {
+                            songsList.innerHTML = '<div class="p-3">No songs available for Spotify model</div>';
+                        }
+                    } else {
+                        await loadAllSongs();
+                    }
+                } catch (error) {
+                    console.error('Error loading songs:', error);
+                    songsList.innerHTML = `
+                        <div class="alert alert-danger m-3">
+                            Error loading songs: ${error.message}
+                        </div>`;
+                } finally {
+                    loading.style.display = 'none';
+                }
+            });
+        });
+
+        // Get recommendations for current model only
+        async function getRecommendations() {
+            if (!selectedSong) return;
+
+            loading.style.display = 'block';
+            const resultsDiv = document.getElementById(`results${currentModel}`);
+            resultsDiv.innerHTML = '';
+            
+            try {
+                const response = await fetch(`/recommend?song=${encodeURIComponent(selectedSong)}&model=${currentModel}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to get recommendations');
+                }
+
+                if (data.recommendations && data.recommendations.length > 0) {
+                    displayRecommendations(data.recommendations);
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="alert alert-warning">
+                            No recommendations found for "${selectedSong}" using ${getModelName(currentModel)}.
+                            Try a different song or model.
+                        </div>`;
+                }
+            } catch (error) {
+                console.error('Error getting recommendations:', error);
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        Error getting recommendations: ${error.message}
+                        <br>
+                        Please try a different song or model.
+                    </div>`;
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function getModelName(model) {
+            switch(model) {
+                case '1': return 'CountVectorizer';
+                case '2': return 'TfidfVectorizer';
+                case '3': return 'Combined Model';
+                case '4': return 'Spotify Model';
+                default: return 'Unknown Model';
+            }
+        }
+
+        // Update the color transition function
+        function activateRecommendationColors() {
+            document.body.classList.add('recommendations-active');
+            
+            // Remove the class after animation completes
+            setTimeout(() => {
+                document.body.classList.remove('recommendations-active');
+            }, 5000);
+        }
+
+        // Update displayRecommendations to include animation
+        function displayRecommendations(recommendations) {
+            const resultsDiv = document.getElementById(`results${currentModel}`);
+            resultsDiv.innerHTML = '';
+            activateRecommendationColors();
+
+            recommendations.forEach((song, index) => {
+                const songCard = document.createElement('div');
+                songCard.className = 'song-card';
+                songCard.style.setProperty('--index', index);
+                songCard.style.setProperty('--delay', `${index * 0.2}s`);
+                songCard.innerHTML = `
+                    <img src="${song.cover_url}" alt="${song.title}" class="song-card-image">
+                    <div class="song-card-content">
+                        <h3>${song.title}</h3>
+                        <div class="song-info">Artist: <span>${song.artist}</span></div>
+                        ${song.genre ? `<div class="song-info">Genre: <span>${song.genre}</span></div>` : ''}
+                        ${song.album ? `<div class="song-info">Album: <span>${song.album}</span></div>` : ''}
+                        <div class="similarity-score">Similarity Score: ${(song.score * 100).toFixed(2)}%</div>
+                    </div>
+                `;
+                resultsDiv.appendChild(songCard);
+            });
+        }
+
+        // Initialize
+        loadAllSongs();
+        document.querySelector('.model-btn[data-model="3"]').classList.add('active');
+
+        // Add Get Recommendations button click handler
+        getRecommendationsBtn.addEventListener('click', () => {
+            if (selectedSong) {
+                getRecommendations();
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,47 @@
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# User datasets and archives
+**/*.csv
+**/*.zip
+
+# Serialized model data (some artifacts exceed GitHub's 100 MB file limit)
+**/*.pkl
+**/*.pickle
+**/*.joblib
+
+# Legacy copies, bundled third-party source, and credential-bearing script
+/movie/mov/
+/movie/movie/
+/movie/surprise/
+/music/mus/
+/music/model4.py
+
+# Generated environments, dependencies, caches, and build output
+.venv/
+venv/
+env/
+**/node_modules/
+**/__pycache__/
+**/.cache
+**/.pytest_cache/
+**/.ipynb_checkpoints/
+**/build/
+**/dist/
+*.py[cod]
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Notebook outputs can contain copied dataset rows or runtime state
+**/*.ipynb
+
+# Local office documents and exports
+**/*.docx
+**/*.pdf
+**/*.pptx
