@@ -1,7 +1,6 @@
-# HYBRID-RECOMMENDATION-SYSTEM
 <div align="center">
-
-# 🎬🎵 Preference-Aware Hybrid Recommendation System
+# HYBRID-RECOMMENDATION-SYSTEM
+# 🎬🎵 Optimizing user Preferences using Hybrid Recommendation System
 
 ### One project. Two discovery engines. Multiple ways to find your next favorite.
 
@@ -156,7 +155,7 @@ flowchart LR
     Tags --> TFIDF[TF-IDF]
     Count --> Cos1[Cosine similarity A]
     TFIDF --> Cos2[Cosine similarity B]
-    Cos1 --> Blend[Combined score = (A + B) / 2]
+    Cos1 --> Blend["Combined score: (A + B) / 2"]
     Cos2 --> Blend
     Lyrics[Precomputed lyrics model] --> LyricScore[Lyric similarity]
     Cos1 --> Rank[Exclude selected item<br/>Rank nearest songs<br/>Return top 5]
@@ -395,4 +394,3 @@ The services currently load local files and train/load models at process startup
 🎞️ **Movies** &nbsp; · &nbsp; 🎧 **Music** &nbsp; · &nbsp; 🧠 **Hybrid ML**
 
 </div>
-
