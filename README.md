@@ -1,5 +1,7 @@
 <div align="center">
-# HYBRID-RECOMMENDATION-SYSTEM
+  # HYBRID-RECOMMENDATION-SYSTEM
+</div>
+<div align="center">
 # 🎬🎵 Optimizing user Preferences using Hybrid Recommendation System
 
 ### One project. Two discovery engines. Multiple ways to find your next favorite.
