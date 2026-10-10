@@ -358,6 +358,8 @@ The services currently load local files and train/load models at process startup
 **Academic year:** Not specified in the supplied project details  
 **Report title:** _Optimizing User Preferences in Recommendation Systems with a Hybrid Machine Learning Approach_
 
+<a id="project-status"></a>
+
 ## 🧪 Project Status & Known Limitations
 
 - This is an academic prototype, not a production deployment. Flask's built-in development server is intended for local development only.
@@ -393,3 +395,4 @@ The services currently load local files and train/load models at process startup
 🎞️ **Movies** &nbsp; · &nbsp; 🎧 **Music** &nbsp; · &nbsp; 🧠 **Hybrid ML**
 
 </div>
+
